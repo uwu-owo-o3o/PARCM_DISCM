@@ -1,1 +1,1 @@
-# PARCM_DISCM README
+# Repository for my works in GDPARCM/STDISCM
