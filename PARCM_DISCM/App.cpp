@@ -6,18 +6,19 @@ void App::initialize()
     //sf::CircleShape* shape = new sf::CircleShape(100.f);
     //shape->setFillColor(sf::Color::Green);
     //this->drawables.push_back(shape);
-
-    this->drawables.push_back(assetLoader.bgIMG);
-
+    this->assetLoader.registerDrawables(&this->drawables);
 }
 
 void App::run()
 {
     sf::Clock clock;
+    window.setFramerateLimit(60);
+
     while (window.isOpen())
     {
         sf::Time deltaTime = clock.restart();
         float dT = deltaTime.asSeconds();
+        
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())

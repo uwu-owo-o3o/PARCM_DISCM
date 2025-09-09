@@ -1,5 +1,7 @@
 #pragma once
 #include "SFML/Graphics.hpp"
+#include "iostream"
+#include "filesystem"
 
 class AssetLoader
 {
@@ -7,7 +9,8 @@ class AssetLoader
 		std::vector<sf::Texture*> assetTextures;
 		std::vector<sf::Sprite*> assetSprites;
 		sf::Sprite* bgIMG;
-
+		sf::Text* fpsText;
+		sf::Font* fpsFont;
 	public:
 		sf::Vector2i offset;
 		float windowWidth;
@@ -20,10 +23,12 @@ class AssetLoader
 
 		void loadBackground();
 		void loadAssets();
+		void setAssetPos();
+		void loadFpsCounter();
 		void moveBackground(float deltaTime);
-		void updateFPSCounter();
+		void updateFPSCounter(float deltaTime);
 		void update(float deltaTime);
-		void draw(sf::RenderWindow* window);
+		void registerDrawables(std::vector<sf::Drawable*>* drawables);
 
 };
 
