@@ -29,6 +29,7 @@ class AssetLoader
 		void updateFPSCounter(float deltaTime);
 		void update(float deltaTime);
 		void registerDrawables(std::vector<sf::Drawable*>* drawables);
+		void registerDrawableAsset(int* index, std::vector<sf::Drawable*>* drawables);
 
 };
 

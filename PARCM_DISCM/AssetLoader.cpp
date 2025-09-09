@@ -120,10 +120,19 @@ void AssetLoader::registerDrawables(std::vector<sf::Drawable*>* drawables)
 {
 	drawables->push_back(this->bgIMG);
 	
-	for (auto sprite : assetSprites) {
-		drawables->push_back(sprite);
-	}
+	//for (auto sprite : assetSprites) {
+	//	drawables->push_back(sprite);
+	//}
+
 
 	drawables->push_back(this->fpsText);
+}
+
+void AssetLoader::registerDrawableAsset(int* index, std::vector<sf::Drawable*>* drawables)
+{
+	if (*index < this->assetSprites.size()) {
+		drawables->push_back(this->assetSprites[*index]);
+	}
+	*index = *index + 1;
 }
 

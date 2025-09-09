@@ -13,6 +13,7 @@ void App::run()
 {
     sf::Clock clock;
     window.setFramerateLimit(60);
+    int index = 0;
 
     while (window.isOpen())
     {
@@ -26,7 +27,7 @@ void App::run()
         }
 
         this->assetLoader.update(dT);
-
+        this->assetLoader.registerDrawableAsset(&index, &this->drawables);
         window.clear();
         this->draw();
         window.display();
