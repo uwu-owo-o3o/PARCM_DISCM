@@ -1,21 +1,46 @@
-#include "SFML/Graphics.hpp"
+#include "iostream"
+#include <thread>
+#include <cstdlib>
+#include <vector>
+#include <mutex>
+
+std::mutex printMutex;
+int x = 99;
+
+void PrintX() {
+	std::cout << "X From PrintX: " << x << std::endl;
+}
+void TestThread(int runTime, int num) {
+	auto duration = std::chrono::system_clock::now() + std::chrono::milliseconds(runTime);
+	while (std::chrono::system_clock::now() < duration) {
+		x = rand() % 11;
+
+		printMutex.lock();
+		std::cout << "X From TestThread " << num << ": " << x << std::endl;
+		printMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	printMutex.lock();
+	std::cout << "Thread " << num << " finished." << std::endl;
+	printMutex.unlock();
+}	
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode({ 200, 200 }), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+	srand(time(0));
+	const int maxThreadCount = 10;
+	const int runTime = 10000;
 
-    while (window.isOpen())
-    {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-        }
+	std::vector <std::thread> threads;
 
-        window.clear();
-        window.draw(shape);
-        window.display();
-    }
+	for (int i = 0; i < maxThreadCount; i++) {
+		threads.push_back(std::thread(TestThread, runTime, i));
+	}
+
+	for (int i = 0; i < maxThreadCount; i++) {
+		threads[i].join();
+	}
+
+	std::cout << "End Main." << std::endl;
 	return 0;
 }
