@@ -135,7 +135,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IETThread.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SampleThread.cpp" />
+    <ClCompile Include="ThreadHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IETThread.h" />
+    <ClInclude Include="IExecutionEvent.h" />
+    <ClInclude Include="SampleThread.h" />
+    <ClInclude Include="ThreadHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

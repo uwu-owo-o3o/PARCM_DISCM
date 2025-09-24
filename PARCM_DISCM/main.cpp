@@ -1,5 +1,6 @@
 #include "iostream"
-#include <thread>
+#include "SampleThread.h"
+#include "ThreadHandler.h"
 #include <cstdlib>
 #include <vector>
 #include <mutex>
@@ -26,7 +27,7 @@ void TestThread(int runTime, int num) {
 	printMutex.unlock();
 }	
 
-int main() {
+void oldMain() {
 	srand(time(0));
 	const int maxThreadCount = 10;
 	const int runTime = 10000;
@@ -42,5 +43,18 @@ int main() {
 	}
 
 	std::cout << "End Main." << std::endl;
+}
+
+int main() {
+	ThreadHandler* handler = new ThreadHandler();
+	SampleThread* sample = new SampleThread();
+	sample->SetData("Sample1");
+	sample->SetCallback(handler);
+	sample->start();
+	do {
+		std::cout << "Am waiting..." << std::endl;
+	} while (!handler->threadDone);
+
+	delete handler;
 	return 0;
 }
