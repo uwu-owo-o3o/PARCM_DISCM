@@ -4,6 +4,7 @@
 #include "color.h"
 #include "interval.h"
 #include "material.h"
+#include "PPMConverter.h"
 
 class camera {
     public:
@@ -20,6 +21,8 @@ class camera {
 
         void render(const hittable& world) {
             initialize();
+            PPMConverter ppmConverter = PPMConverter();
+            ppmConverter.initialize(this->image_width, this->image_height);
 
             std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
@@ -31,10 +34,12 @@ class camera {
                         ray r = get_ray(i, j);
                         pixel_color += ray_color(r, max_depth, world);
                     }
-                    write_color(std::cout, pixel_samples_scale * pixel_color);
+                    //write_color(std::cout, pixel_samples_scale * pixel_color);
+                    ppmConverter.setPixels(i, j, pixel_color.x(), pixel_color.y(), pixel_color.z(), samples_per_pixel);
                 }
             }
 
+            ppmConverter.draw();
             std::clog << "\rDone.                 \n";
         }
 
