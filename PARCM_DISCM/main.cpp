@@ -1,6 +1,7 @@
 #include "iostream"
 #include "SampleThread.h"
 #include "ThreadHandler.h"
+#include "BaseRunner.h"
 #include <cstdlib>
 #include <vector>
 #include <mutex>
@@ -43,9 +44,7 @@ void oldMain() {
 	}
 
 	std::cout << "End Main." << std::endl;
-}
 
-int main() {
 	ThreadHandler* handler = new ThreadHandler();
 	SampleThread* sample = new SampleThread();
 	sample->SetData("Sample1");
@@ -56,5 +55,10 @@ int main() {
 	} while (!handler->threadDone);
 
 	delete handler;
+}
+
+int main() {
+	BaseRunner runner;
+	runner.run();
 	return 0;
 }

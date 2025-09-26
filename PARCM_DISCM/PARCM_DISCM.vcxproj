@@ -135,15 +135,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AGameObject.cpp" />
+    <ClCompile Include="BaseRunner.cpp" />
+    <ClCompile Include="BGObject.cpp" />
+    <ClCompile Include="FPSCounter.cpp" />
+    <ClCompile Include="GameObjectManager.cpp" />
+    <ClCompile Include="IconObject.cpp" />
     <ClCompile Include="IETThread.cpp" />
+    <ClCompile Include="LoadAssetThread.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="SampleThread.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="TextureDisplay.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="ThreadHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IETThread.h" />
     <ClInclude Include="IExecutionEvent.h" />
+    <ClInclude Include="LoadAssetThread.h" />
+    <ClInclude Include="MathUtils.h" />
     <ClInclude Include="SampleThread.h" />
+    <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="TextureDisplay.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="ThreadHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
