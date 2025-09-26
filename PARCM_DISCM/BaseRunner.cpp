@@ -29,6 +29,9 @@ BaseRunner::BaseRunner() :
 void BaseRunner::run() {
 	sf::Clock clock;
 	sf::Time timeSinceLastUpdate = sf::Time::Zero;
+
+	this->window.setFramerateLimit(60);
+
 	while (this->window.isOpen())
 	{
 		sf::Time elapsedTime = clock.restart();

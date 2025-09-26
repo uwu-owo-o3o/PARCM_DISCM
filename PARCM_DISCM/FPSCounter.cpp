@@ -45,5 +45,6 @@ void FPSCounter::draw(sf::RenderWindow* targetWindow)
 
 void FPSCounter::updateFPS(sf::Time elapsedTime)
 {
-	this->statsText->setString("FPS: --\n");
+	float fps = 1.0f / elapsedTime.asSeconds();
+	this->statsText->setString("FPS: " + std::to_string((int)fps));
 }

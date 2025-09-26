@@ -45,6 +45,7 @@ void TextureManager::loadSingleStreamAsset(int index)
 		//std::cout << "Reading Entry: " << entry.path().string() << std::endl;
 		if(index == fileNum)
 		{
+			IETThread::sleep(500);
 			std::vector<String> tokens = StringUtils::split(entry.path().string(), '/');
 			String assetName = StringUtils::split(tokens[tokens.size() - 1], '.')[0];
 			this->instantiateAsTexture(entry.path().string(), assetName, true);
