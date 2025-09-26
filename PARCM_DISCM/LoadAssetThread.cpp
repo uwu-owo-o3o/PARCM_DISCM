@@ -19,5 +19,6 @@ void LoadAssetThread::run()
 {
 	TextureManager::getInstance()->loadSingleStreamAsset(this->id);
 	this->onFinished->OnFinishedExecution();
+	//std::cout << "id: " << this->id << std::endl;
 	delete this;
 }

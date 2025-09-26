@@ -65,5 +65,5 @@ void TextureDisplay::spawnObject()
 
 void TextureDisplay::OnFinishedExecution()
 {
-	//this->spawnObject();
+	this->spawnObject();
 }
