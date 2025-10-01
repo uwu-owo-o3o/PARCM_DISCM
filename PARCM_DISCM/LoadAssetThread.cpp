@@ -15,7 +15,7 @@ LoadAssetThread::~LoadAssetThread()
 {
 }
 
-void LoadAssetThread::run()
+void LoadAssetThread::OnStartTask()
 {
 	TextureManager::getInstance()->loadSingleStreamAsset(this->id);
 	this->onFinished->OnFinishedExecution();

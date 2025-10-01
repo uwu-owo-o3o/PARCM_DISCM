@@ -11,7 +11,7 @@ TextureDisplay::TextureDisplay(): AGameObject("TextureDisplay")
 
 void TextureDisplay::initialize()
 {
-	
+	threadPool.StartScheduling();
 }
 
 void TextureDisplay::processInput(sf::Event event)
@@ -29,7 +29,7 @@ void TextureDisplay::update(sf::Time deltaTime)
 		int texCount = TextureManager::getInstance()->getNumLoadedStreamTextures();
 		if (texCount < 200) {
 			LoadAssetThread* asset = new LoadAssetThread(texCount, this);
-			asset->start();
+			threadPool.ScheduleTask(asset);
 		}
 		ticks = 0;
 	}

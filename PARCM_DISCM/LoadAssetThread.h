@@ -2,8 +2,9 @@
 #include "IETThread.h"
 #include "IExecutionEvent.h"
 #include "TextureManager.h"
+#include "IWorkerAction.h"
 
-class LoadAssetThread : public IETThread
+class LoadAssetThread : public IWorkerAction
 {
 	public:
 		LoadAssetThread();
@@ -12,7 +13,8 @@ class LoadAssetThread : public IETThread
 
 	private:
 		int id = 0;
-		void run() override;
+		//void run() override;
+		void OnStartTask() override;
 		IExecutionEvent* onFinished;
 
 };
