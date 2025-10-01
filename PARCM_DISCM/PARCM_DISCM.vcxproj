@@ -135,19 +135,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IETThread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PPMConverter.cpp" />
+    <ClCompile Include="RTThread.cpp" />
+    <ClCompile Include="ThreadHandler.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="hittable_list.h" />
+    <ClInclude Include="IETThread.h" />
+    <ClInclude Include="IExecutionEvent.h" />
     <ClInclude Include="interval.h" />
+    <ClInclude Include="IWorkerAction.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="PPMConverter.h" />
+    <ClInclude Include="RTThread.h" />
     <ClInclude Include="rtweekend.h" />
     <ClInclude Include="sphere.h" />
+    <ClInclude Include="ThreadHandler.h" />
+    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="vec3.h" />
+    <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
