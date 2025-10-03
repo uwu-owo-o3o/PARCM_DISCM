@@ -6,59 +6,170 @@
 #include <vector>
 #include <mutex>
 
-std::mutex printMutex;
-int x = 99;
+class ThreadA : public IETThread {
+	public:
+		float* data;
+		bool* flag;
+		int* turn;
+	private:
+		void run() override {
+			while (true) {
+				flag[0] = true;
+				*turn = 1;
+				while (flag[1] && *turn == 1) {
+					//std::cout << "Thread A is waiting." << std::endl;
+				}
 
-void PrintX() {
-	std::cout << "X From PrintX: " << x << std::endl;
-}
-void TestThread(int runTime, int num) {
-	auto duration = std::chrono::system_clock::now() + std::chrono::milliseconds(runTime);
-	while (std::chrono::system_clock::now() < duration) {
-		x = rand() % 11;
+				IETThread::sleep(500);
+				*data = 50;
+				std::cout << *data << std::endl;
+				flag[0] = false;
+			}
+		}
+};
 
-		printMutex.lock();
-		std::cout << "X From TestThread " << num << ": " << x << std::endl;
-		printMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+class ThreadB : public IETThread {
+	public:
+		float* data;
+		bool* flag;
+		int* turn;
+	private:
+		void run() override {
+			while (true) {
+				flag[1] = true;
+				*turn = 2;
+				while (flag[2] && *turn == 2) {
+					//std::cout << "Thread B is waiting." << std::endl;
+				}
+
+				IETThread::sleep(500);
+				*data = 100;
+				std::cout << *data << std::endl;
+				flag[1] = false;
+			}
+		}
+};
+
+class ThreadC : public IETThread {
+public:
+	float* data;
+	bool* flag;
+	int* turn;
+private:
+	void run() override {
+		while (true) {
+			flag[2] = true;
+			*turn = 0;
+			while (flag[0] && *turn == 0) {
+				//std::cout << "Thread C is waiting." << std::endl;
+			}
+
+			IETThread::sleep(500);
+			*data = 150;
+			std::cout << *data << std::endl;
+			flag[2] = false;
+		}
 	}
+};
 
-	printMutex.lock();
-	std::cout << "Thread " << num << " finished." << std::endl;
-	printMutex.unlock();
-}	
+
+class Escoffier : public IETThread {
+	public:
+		bool* hasFood;
+		bool* hasOrdered;
+	private:
+		void WaitForOrder() {
+			while (!*hasOrdered) {
+				std::cout << "Escoffier is waiting\n";
+			}
+		}
+		void Cook() {
+			std::cout << "Escoffier cooks\n" << std::endl;
+			*hasFood = true;
+		}
+		void Enter() {
+			std::cout << "Escoffier enters\n" << std::endl;
+		}
+		void run() override {
+			Enter();
+			WaitForOrder();
+			Cook();
+		}
+};
+
+class Furina : public IETThread {
+	public:
+		bool* hasFood;
+		bool* hasOrdered;
+	private:
+		void WaitForFood() {
+			while (!*hasFood) {
+				std::cout << "Furina is waiting\n";
+			}
+		}
+		void Eats() {
+			*hasFood = false;
+			std::cout << "Furina eats\n" << std::endl;
+		}
+		void Enter() {
+			std::cout << "Furina enters\n" << std::endl;
+		}
+		void Order() {
+			std::cout << "Furina orders\n" << std::endl;
+			*hasOrdered = true;
+		}
+
+		void run() override {
+			Enter();
+			WaitForFood();
+			Eats();
+		}
+	};
 
 void oldMain() {
-	srand(time(0));
-	const int maxThreadCount = 10;
-	const int runTime = 10000;
+	float data = 0.0f;
+	int turn = 0;
+	bool flag[3] = { false, false, false};
 
-	std::vector <std::thread> threads;
+	ThreadA a;
+	ThreadB b;
+	ThreadC c;
 
-	for (int i = 0; i < maxThreadCount; i++) {
-		threads.push_back(std::thread(TestThread, runTime, i));
-	}
+	a.data = &data;
+	b.data = &data;
+	c.data = &data;
 
-	for (int i = 0; i < maxThreadCount; i++) {
-		threads[i].join();
-	}
+	a.turn = &turn;
+	b.turn = &turn;
+	c.turn = &turn;
 
-	std::cout << "End Main." << std::endl;
+	a.flag = flag;
+	b.flag = flag;
+	c.flag = flag;
 
-	ThreadHandler* handler = new ThreadHandler();
-	SampleThread* sample = new SampleThread();
-	sample->SetData("Sample1");
-	sample->SetCallback(handler);
-	sample->start();
-	do {
-		std::cout << "Am waiting..." << std::endl;
-	} while (!handler->threadDone);
+	a.start();
+	b.start();
+	c.start();
+	//bool hasFood = false;
+	//bool hasOrdered =  false;
+	//Escoffier esc;
+	//Furina furi;
 
-	delete handler;
+	//esc.hasFood = &hasFood;
+	//furi.hasFood = &hasFood;
+	//esc.hasOrdered = &hasOrdered;
+	//furi.hasOrdered = &hasOrdered;
+
+	//furi.start();
+	//esc.start();
+
+
+	IETThread::sleep(10000);
 }
 
 int main() {
-	BaseRunner runner;
-	runner.run();
+	/*BaseRunner runner;
+	runner.run();*/
+	oldMain();
 	return 0;
 }
