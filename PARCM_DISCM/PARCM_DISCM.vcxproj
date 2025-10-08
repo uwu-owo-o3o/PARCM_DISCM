@@ -138,7 +138,6 @@
     <ClCompile Include="IETThread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PPMConverter.cpp" />
-    <ClCompile Include="RTThread.cpp" />
     <ClCompile Include="ThreadHandler.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="WorkerThread.cpp" />

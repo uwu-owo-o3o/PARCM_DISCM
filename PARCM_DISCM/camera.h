@@ -1,139 +1,166 @@
 #pragma once
 
-#include "hittable.h"
-#include "color.h"
-#include "interval.h"
-#include "material.h"
-#include "PPMConverter.h"
+#include "RTThread.h"
+#include "IExecutionEvent.h"
+#include "ThreadPool.h"
 
-class camera {
-    public:
-        double aspect_ratio = 1.0;  // Ratio of image width over height
-        int    image_width = 100;  // Rendered image width in pixel count
-        int    image_height = 100;   // Rendered image height
-        int    samples_per_pixel = 10;   // Count of random samples for each pixel
-        int    max_depth = 10;   // Maximum number of ray bounces into scene
-        double vfov = 90;  // Vertical view angle (field of view)
-        point3 lookfrom = point3(0, 0, 0);   // Point camera is looking from
-        point3 lookat = point3(0, 0, -1);  // Point camera is looking at
-        vec3   vup = vec3(0, 1, 0);     // Camera-relative "up" direction
-        double defocus_angle = 0;  // Variation angle of rays through each pixel
-        double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+class camera : public IExecutionEvent {
 
-        void render(const hittable& world) {
-            initialize();
-            PPMConverter ppmConverter = PPMConverter();
-            ppmConverter.initialize(this->image_width, this->image_height);
+private:
+    double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
+    point3 center;         // Camera center
+    point3 pixel00_loc;    // Location of pixel 0, 0
+    vec3   pixel_delta_u;  // Offset to pixel to the right
+    vec3   pixel_delta_v;  // Offset to pixel below
+    vec3   u, v, w;              // Camera frame basis vectors
+    vec3   defocus_disk_u;       // Defocus disk horizontal radius
+    vec3   defocus_disk_v;       // Defocus disk vertical radius
 
-            std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+public:
 
-            for (int j = 0; j < image_height; j++) {
-                std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-                for (int i = 0; i < image_width; i++) {
-                    color pixel_color(0, 0, 0);
-                    for (int sample = 0; sample < samples_per_pixel; sample++) {
-                        ray r = get_ray(i, j);
-                        pixel_color += ray_color(r, max_depth, world);
-                    }
-                    //write_color(std::cout, pixel_samples_scale * pixel_color);
-                    ppmConverter.setPixels(i, j, pixel_color.x(), pixel_color.y(), pixel_color.z(), samples_per_pixel);
-                }
+    double aspect_ratio = 1.0;  // Ratio of image width over height
+    int    image_width = 100;  // Rendered image width in pixel count
+    int    image_height = 100;   // Rendered image height
+    int    samples_per_pixel = 10;   // Count of random samples for each pixel
+    int    max_depth = 10;   // Maximum number of ray bounces into scene
+    double vfov = 90;  // Vertical view angle (field of view)
+    point3 lookfrom = point3(0, 0, 0);   // Point camera is looking from
+    point3 lookat = point3(0, 0, -1);  // Point camera is looking at
+    vec3   vup = vec3(0, 1, 0);     // Camera-relative "up" direction
+    double defocus_angle = 0;  // Variation angle of rays through each pixel
+    double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+
+    PPMConverter ppmConverter = PPMConverter();
+    hittable* world;
+
+    ThreadPool* pool;
+    std::vector<bool> isFinished = std::vector<bool>();
+    int done_num = 0;
+    bool closeFlag = false;
+
+    void render(hittable* world) {
+        initialize();
+        ppmConverter.initialize(this->image_width, this->image_height);
+        this->world = world;
+
+        for (int i = 0; i < isFinished.size(); i++) {
+            this->isFinished[i] = false;
+        }
+
+        int workerCount = 8;
+
+        this->isFinished.resize(workerCount);
+
+        pool = new ThreadPool(workerCount);
+        pool->StartScheduling();
+
+        int linesPerWorker = this->image_height / workerCount;
+        int remainingLines = this->image_height % workerCount;
+        int start_line = 0;
+        int end_line = 0;
+        int extra = 0;
+        for (int i = 0; i < workerCount; i++) {
+            if (i < remainingLines) {
+                extra = 1;
             }
+            else {
+                extra = 0;
+            }
+            end_line = start_line + linesPerWorker + extra;
+            std::cout << "LINES PER WORKER: " << linesPerWorker << std::endl;
+            std::cout << "STARTLINE: " << start_line << std::endl;
+            std::cout << "ENDLINE: " << end_line << std::endl;
+            this->makeRTThread(start_line, end_line);
+            start_line = end_line;
+        }
 
+        while (!closeFlag) {
+
+        }
+    }
+
+    void makeRTThread(int start_line, int end_line) {
+        RTThread* thread = new RTThread(this);
+        thread->start_line = start_line;
+        thread->end_line = end_line;
+        thread->image_width = this->image_width;
+        thread->samples_per_pixel = this->samples_per_pixel;
+        thread->max_depth = this->max_depth;
+
+        thread->pixel_samples_scale = this->pixel_samples_scale;
+        thread->defocus_angle = this->defocus_angle;
+
+        thread->center = this->center;
+        thread->pixel00_loc = this->pixel00_loc;
+        thread->pixel_delta_u = this->pixel_delta_u;
+        thread->pixel_delta_v = this->pixel_delta_v;
+        thread->u = this->u;
+        thread->v = this->v;
+        thread->w = this->w;
+        thread->defocus_disk_u = this->defocus_disk_u;
+        thread->defocus_disk_v = this->defocus_disk_v;
+
+        thread->ppmConverter = &ppmConverter;
+        thread->world = world;
+
+        pool->ScheduleTask(thread);
+    }
+
+    void OnFinishedExecution()
+    {
+        std::cout << "attempt to call on finish." << std::endl;
+        this->isFinished[done_num] = true;
+        this->done_num++;
+
+        int count = 0;
+        for (bool value : this->isFinished) {
+            if (value) {
+                count++;
+            }
+        }
+        std::cout << "count: " << count << " size: " << this->isFinished.size() << std::endl;
+        if (count == this->isFinished.size()) {
+            std::cout << "Drawing..." << std::endl;
             ppmConverter.draw();
-            std::clog << "\rDone.                 \n";
+            closeFlag = true;
         }
+    }
 
-    private:
-        
-        double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
-        point3 center;         // Camera center
-        point3 pixel00_loc;    // Location of pixel 0, 0
-        vec3   pixel_delta_u;  // Offset to pixel to the right
-        vec3   pixel_delta_v;  // Offset to pixel below
-        vec3   u, v, w;              // Camera frame basis vectors
-        vec3   defocus_disk_u;       // Defocus disk horizontal radius
-        vec3   defocus_disk_v;       // Defocus disk vertical radius
+private:
+    void initialize() {
+        //image_height = int(image_width / aspect_ratio);
+        //image_height = (image_height < 1) ? 1 : image_height;
 
-        void initialize() {
-            //image_height = int(image_width / aspect_ratio);
-            //image_height = (image_height < 1) ? 1 : image_height;
+        pixel_samples_scale = 1.0 / samples_per_pixel;
 
-            pixel_samples_scale = 1.0 / samples_per_pixel;
+        center = lookfrom;
 
-            center = lookfrom;
+        // Determine viewport dimensions.
+        auto theta = degrees_to_radians(vfov);
+        auto h = std::tan(theta / 2);
+        auto viewport_height = 2 * h * focus_dist;
+        auto viewport_width = viewport_height * (double(image_width) / image_height);
 
-            // Determine viewport dimensions.
-            auto theta = degrees_to_radians(vfov);
-            auto h = std::tan(theta / 2);
-            auto viewport_height = 2 * h * focus_dist;
-            auto viewport_width = viewport_height * (double(image_width) / image_height);
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        w = unit_vector(lookfrom - lookat);
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
 
-            // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
-            w = unit_vector(lookfrom - lookat);
-            u = unit_vector(cross(vup, w));
-            v = cross(w, u);
+        // Calculate the vectors across the horizontal and down the vertical viewport edges.
+        vec3 viewport_u = viewport_width * u;    // Vector across viewport horizontal edge
+        vec3 viewport_v = viewport_height * -v;  // Vector down viewport vertical edge
 
-            // Calculate the vectors across the horizontal and down the vertical viewport edges.
-            vec3 viewport_u = viewport_width * u;    // Vector across viewport horizontal edge
-            vec3 viewport_v = viewport_height * -v;  // Vector down viewport vertical edge
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+        pixel_delta_u = viewport_u / image_width;
+        pixel_delta_v = viewport_v / image_height;
 
-            // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-            pixel_delta_u = viewport_u / image_width;
-            pixel_delta_v = viewport_v / image_height;
+        // Calculate the location of the upper left pixel.
+        auto viewport_upper_left = center - (focus_dist * w) - viewport_u / 2 - viewport_v / 2;
+        pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-            // Calculate the location of the upper left pixel.
-            auto viewport_upper_left = center - (focus_dist * w) - viewport_u / 2 - viewport_v / 2;
-            pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+        auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = v * defocus_radius;
+    }
 
-            auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
-            defocus_disk_u = u * defocus_radius;
-            defocus_disk_v = v * defocus_radius;
-        }
-
-        ray get_ray(int i, int j) const {
-            // Construct a camera ray originating from the origin and directed at randomly sampled
-            // point around the pixel location i, j.
-
-            auto offset = sample_square();
-            auto pixel_sample = pixel00_loc
-                + ((i + offset.x()) * pixel_delta_u)
-                + ((j + offset.y()) * pixel_delta_v);
-
-            auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
-            auto ray_direction = pixel_sample - ray_origin;
-
-            return ray(ray_origin, ray_direction);
-        }
-
-        vec3 sample_square() const {
-            // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-            return vec3(random_double() - 0.5, random_double() - 0.5, 0);
-        }
-
-        point3 defocus_disk_sample() const {
-            // Returns a random point in the camera defocus disk.
-            auto p = random_in_unit_disk();
-            return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
-        }
-
-        color ray_color(const ray& r, int depth, const hittable& world) const {
-            // If we've exceeded the ray bounce limit, no more light is gathered.
-            if (depth <= 0)
-                return color(0, 0, 0);
-
-            hit_record rec;
-
-            if (world.hit(r, interval(0.001, infinity), rec)) {
-                ray scattered;
-                color attenuation;
-                if (rec.mat->scatter(r, rec, attenuation, scattered))
-                    return attenuation * ray_color(scattered, depth - 1, world);
-                return color(0, 0, 0);
-            }
-
-            vec3 unit_direction = unit_vector(r.direction());
-            auto a = 0.5 * (unit_direction.y() + 1.0);
-            return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-        }
 };

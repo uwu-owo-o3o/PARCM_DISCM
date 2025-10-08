@@ -10,6 +10,7 @@ class ThreadPool : public IETThread, public IFinishedTask
 {
 	public:
 		ThreadPool(int _workerCount);
+		ThreadPool();
 		~ThreadPool();
 
 		void StartScheduling();

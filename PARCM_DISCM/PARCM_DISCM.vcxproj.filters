@@ -33,9 +33,6 @@
     <ClCompile Include="WorkerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RTThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vec3.h">

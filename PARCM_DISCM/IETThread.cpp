@@ -10,6 +10,13 @@ IETThread::~IETThread()
 
 void IETThread::start()
 {
+	if (this == nullptr) {
+		std::cout << " this is null!" << std::endl;
+		return;
+	}
+	else {
+		std::cout << "this is NOT null!" << std::endl;
+	}
 	std::thread(&IETThread::run, this).detach();
 }
 

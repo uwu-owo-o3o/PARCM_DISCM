@@ -1,4 +1,5 @@
 #include "rtweekend.h"
+#include "RTThread.h"
 #include "camera.h"
 #include "hittable.h"
 #include "hittable_list.h"
@@ -36,7 +37,7 @@ int main() {
                 sphere_material = make_shared<dielectric>(1.5);
                 world.add(make_shared<sphere>(center, 0.2, sphere_material));
             }
-            }
+         }
         
     }
 
@@ -68,5 +69,6 @@ int main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
 
-    cam.render(world);
+    cam.render(&world);
+
 }

@@ -8,6 +8,14 @@ ThreadPool::ThreadPool(int _workerCount)
 	}
 }
 
+ThreadPool::ThreadPool()
+{
+	this->workerCount = 1;
+	for (int i = 0; i < workerCount; i++) {
+		this->InactiveThreads.push(new WorkerThread(i, this));
+	}
+}
+
 ThreadPool::~ThreadPool()
 {
 }
