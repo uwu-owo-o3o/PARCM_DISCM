@@ -15,7 +15,7 @@ int main() {
     for (int a = 0; a < 105; a++) {
         
         auto choose_mat = random_double();
-        point3 center(random_double(1, 7), 0.2, random_double(-3, 3));
+        point3 center(random_double(-1, 4), 0.2, random_double(-3, 3));
         if ((center - point3(4, 0.2, 0)).length() > 0.9) {
             shared_ptr<material> sphere_material;
 
@@ -48,7 +48,7 @@ int main() {
     world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
 
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+    world.add(make_shared<sphere>(point3(6, 1, 0), 1.0, material3));
 
     //auto material4 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     //world.add(make_shared<sphere>(point3(0, 1, 2), 1.0, material4));
@@ -58,7 +58,7 @@ int main() {
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1080;
     cam.image_height = 1080;
-    cam.samples_per_pixel = 160;
+    cam.samples_per_pixel = 200;
     cam.max_depth = 50;
 
     cam.vfov = 20;
@@ -66,8 +66,8 @@ int main() {
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
-    cam.defocus_angle = 0.6;
-    cam.focus_dist = 10.0;
+    cam.defocus_angle = 0.35;
+    cam.focus_dist = 5;
 
     cam.render(&world);
 
