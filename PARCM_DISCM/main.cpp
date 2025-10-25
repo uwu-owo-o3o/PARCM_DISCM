@@ -10,6 +10,10 @@
 
 // Max number of permits
 std::counting_semaphore<5> my_semaphore(1); // initialized with the starting number of permits/keys
+
+std::counting_semaphore<1> mtxA(1); // for semaphorethread
+std::counting_semaphore<1> mtxB(0);
+
 class ThreadA : public IETThread {
 	public:
 		float* data;
@@ -18,16 +22,11 @@ class ThreadA : public IETThread {
 	private:
 		void run() override {
 			while (true) {
-				flag[0] = true;
-				*turn = 1;
-				while (flag[1] && *turn == 1) {
-					//std::cout << "Thread A is waiting." << std::endl;
-				}
-
+				mtxA.acquire();
 				IETThread::sleep(500);
 				*data = 50;
 				std::cout << *data << std::endl;
-				flag[0] = false;
+				mtxB.release();
 			}
 		}
 };
@@ -40,16 +39,12 @@ class ThreadB : public IETThread {
 	private:
 		void run() override {
 			while (true) {
-				flag[1] = true;
-				*turn = 2;
-				while (flag[2] && *turn == 2) {
-					//std::cout << "Thread B is waiting." << std::endl;
-				}
+				mtxB.acquire();
 
 				IETThread::sleep(500);
 				*data = 100;
 				std::cout << *data << std::endl;
-				flag[1] = false;
+				mtxA.release();
 			}
 		}
 };
@@ -109,27 +104,28 @@ void oldMain() {
 	ThreadB b;
 	ThreadC c;
 
-	//a.data = &data;
-	//b.data = &data;
+	a.data = &data;
+	b.data = &data;
 	//c.data = &data;
 
-	//a.turn = &turn;
-	//b.turn = &turn;
+	a.turn = &turn;
+	b.turn = &turn;
 	//c.turn = &turn;
 
-	//a.flag = flag;
-	//b.flag = flag;
+	a.flag = flag;
+	b.flag = flag;
 	//c.flag = flag;
 
-	//a.start();
-	//b.start();
+	a.start();
+	b.start();
 	//c.start();
 
-	SemaphoreThread1 thread1;
-	SemaphoreThread2 thread2;
+	//SemaphoreThread1 thread1;
+	//SemaphoreThread2 thread2;
 
-	thread1.start();
-	thread2.start();
+	//thread1.start();
+	//thread2.start();
+
 	IETThread::sleep(10000);
 }
 
