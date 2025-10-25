@@ -13,6 +13,7 @@ std::counting_semaphore<5> my_semaphore(1); // initialized with the starting num
 
 std::counting_semaphore<1> mtxA(1); // for semaphorethread
 std::counting_semaphore<1> mtxB(0);
+std::counting_semaphore<1> mtxC(0);
 
 class ThreadA : public IETThread {
 	public:
@@ -44,7 +45,7 @@ class ThreadB : public IETThread {
 				IETThread::sleep(500);
 				*data = 100;
 				std::cout << *data << std::endl;
-				mtxA.release();
+				mtxC.release();
 			}
 		}
 };
@@ -57,16 +58,12 @@ public:
 private:
 	void run() override {
 		while (true) {
-			flag[2] = true;
-			*turn = 0;
-			while (flag[0] && *turn == 0) {
-				//std::cout << "Thread C is waiting." << std::endl;
-			}
+			mtxC.acquire();
 
 			IETThread::sleep(500);
-			*data = 150;
-			std::cout << *data << std::endl;
-			flag[2] = false;
+			
+			std::cout << "C!" << std::endl;
+			mtxA.release();
 		}
 	}
 };
