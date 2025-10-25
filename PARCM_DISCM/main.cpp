@@ -6,6 +6,10 @@
 #include <vector>
 #include <mutex>
 
+#include <semaphore> 
+
+// Max number of permits
+std::counting_semaphore<5> my_semaphore(1); // initialized with the starting number of permits/keys
 class ThreadA : public IETThread {
 	public:
 		float* data;
@@ -72,59 +76,29 @@ private:
 	}
 };
 
-
-class Escoffier : public IETThread {
-	public:
-		bool* hasFood;
-		bool* hasOrdered;
+class SemaphoreThread1 : public IETThread {
 	private:
-		void WaitForOrder() {
-			while (!*hasOrdered) {
-				std::cout << "Escoffier is waiting\n";
-			}
-		}
-		void Cook() {
-			std::cout << "Escoffier cooks\n" << std::endl;
-			*hasFood = true;
-		}
-		void Enter() {
-			std::cout << "Escoffier enters\n" << std::endl;
-		}
 		void run() override {
-			Enter();
-			WaitForOrder();
-			Cook();
+			std::cout << "1: Trying to acquire semaphore." << std::endl;
+			my_semaphore.acquire(); //c++ retrieves 1 by 1 with acquire
+			std::cout << "1: A Crit Section\n";
+			IETThread::sleep(1000);
+			my_semaphore.release();
+			std::cout << "1: Released Semaphore \n";
 		}
 };
 
-class Furina : public IETThread {
-	public:
-		bool* hasFood;
-		bool* hasOrdered;
-	private:
-		void WaitForFood() {
-			while (!*hasFood) {
-				std::cout << "Furina is waiting\n";
-			}
-		}
-		void Eats() {
-			*hasFood = false;
-			std::cout << "Furina eats\n" << std::endl;
-		}
-		void Enter() {
-			std::cout << "Furina enters\n" << std::endl;
-		}
-		void Order() {
-			std::cout << "Furina orders\n" << std::endl;
-			*hasOrdered = true;
-		}
-
-		void run() override {
-			Enter();
-			WaitForFood();
-			Eats();
-		}
-	};
+class SemaphoreThread2 : public IETThread {
+private:
+	void run() override {
+		IETThread::sleep(100);
+		std::cout << "2: Trying to acquire semaphore." << std::endl;
+		my_semaphore.acquire(); //c++ retrieves 1 by 1 with acquire
+		std::cout << "2: A Crit Section\n";
+		my_semaphore.release();
+		std::cout << "2: Released Semaphore \n";
+	}
+};
 
 void oldMain() {
 	float data = 0.0f;
@@ -135,35 +109,27 @@ void oldMain() {
 	ThreadB b;
 	ThreadC c;
 
-	a.data = &data;
-	b.data = &data;
-	c.data = &data;
+	//a.data = &data;
+	//b.data = &data;
+	//c.data = &data;
 
-	a.turn = &turn;
-	b.turn = &turn;
-	c.turn = &turn;
+	//a.turn = &turn;
+	//b.turn = &turn;
+	//c.turn = &turn;
 
-	a.flag = flag;
-	b.flag = flag;
-	c.flag = flag;
+	//a.flag = flag;
+	//b.flag = flag;
+	//c.flag = flag;
 
-	a.start();
-	b.start();
-	c.start();
-	//bool hasFood = false;
-	//bool hasOrdered =  false;
-	//Escoffier esc;
-	//Furina furi;
+	//a.start();
+	//b.start();
+	//c.start();
 
-	//esc.hasFood = &hasFood;
-	//furi.hasFood = &hasFood;
-	//esc.hasOrdered = &hasOrdered;
-	//furi.hasOrdered = &hasOrdered;
+	SemaphoreThread1 thread1;
+	SemaphoreThread2 thread2;
 
-	//furi.start();
-	//esc.start();
-
-
+	thread1.start();
+	thread2.start();
 	IETThread::sleep(10000);
 }
 
