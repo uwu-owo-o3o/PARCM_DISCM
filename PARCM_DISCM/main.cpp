@@ -68,27 +68,96 @@ private:
 	}
 };
 
+std::binary_semaphore output(1);
+std::binary_semaphore a2keys(0);
+
 class SemaphoreThread1 : public IETThread {
 	private:
+		void A1() {
+			output.acquire();
+			std::cout << "A1\n";
+			output.release();
+		}
+
+		void A2() {
+			output.acquire();
+			std::cout << "A2\n";
+			output.release();
+		}
+
 		void run() override {
-			std::cout << "1: Trying to acquire semaphore." << std::endl;
-			my_semaphore.acquire(); //c++ retrieves 1 by 1 with acquire
-			std::cout << "1: A Crit Section\n";
-			IETThread::sleep(1000);
-			my_semaphore.release();
-			std::cout << "1: Released Semaphore \n";
+			A1();
+			a2keys.acquire(); 
+			A2();
+		}
+};
+
+std::binary_semaphore goldkey(1);
+int gold = 0;
+int user_gold = 0;
+
+class Mine : public IETThread {
+	private:
+		void Print() {
+			std::cout << "Mine add 1 gold\n";
+			std::cout << "Total gold: " << gold << "\n";
+
+
+		}
+
+		void run() {
+			while (true) {
+				IETThread::sleep(500);
+				goldkey.acquire();
+				gold++;
+				Print();
+				goldkey.release();
+			}
+		}
+};
+
+class Miner : public IETThread {
+	private:
+		void Print() {
+			std::cout << "\n";
+			std::cout << "Miner mined 1 gold\n";
+			std::cout << "Total gold: " << gold << "\n";
+			std::cout << "Total user gold: " << user_gold << "\n";
+
+		}
+
+		void run() {
+			while (true) {
+				if (gold > 0) {
+					IETThread::sleep(1000);
+					goldkey.acquire();
+					gold--;
+					user_gold++;
+					Print();
+					goldkey.release();
+				}
+			}
 		}
 };
 
 class SemaphoreThread2 : public IETThread {
 private:
+	void B1() {
+		output.acquire();
+		std::cout << "B1\n";
+		output.release();
+	}
+
+	void B2() {
+		output.acquire();
+		std::cout << "B2\n";
+		output.release();
+	}
+
 	void run() override {
-		IETThread::sleep(100);
-		std::cout << "2: Trying to acquire semaphore." << std::endl;
-		my_semaphore.acquire(); //c++ retrieves 1 by 1 with acquire
-		std::cout << "2: A Crit Section\n";
-		my_semaphore.release();
-		std::cout << "2: Released Semaphore \n";
+		B1();
+		a2keys.release();
+		B2();
 	}
 };
 
@@ -97,24 +166,24 @@ void oldMain() {
 	int turn = 0;
 	bool flag[3] = { false, false, false};
 
-	ThreadA a;
-	ThreadB b;
-	ThreadC c;
+	//ThreadA a;
+	//ThreadB b;
+	//ThreadC c;
 
-	a.data = &data;
-	b.data = &data;
-	//c.data = &data;
+	//a.data = &data;
+	//b.data = &data;
+	////c.data = &data;
 
-	a.turn = &turn;
-	b.turn = &turn;
-	//c.turn = &turn;
+	//a.turn = &turn;
+	//b.turn = &turn;
+	////c.turn = &turn;
 
-	a.flag = flag;
-	b.flag = flag;
-	//c.flag = flag;
+	//a.flag = flag;
+	//b.flag = flag;
+	////c.flag = flag;
 
-	a.start();
-	b.start();
+	//a.start();
+	//b.start();
 	//c.start();
 
 	//SemaphoreThread1 thread1;
@@ -122,6 +191,12 @@ void oldMain() {
 
 	//thread1.start();
 	//thread2.start();
+
+	Mine mine;
+	Miner miner;
+
+	mine.start();
+	miner.start();
 
 	IETThread::sleep(10000);
 }
