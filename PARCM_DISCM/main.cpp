@@ -7,6 +7,7 @@
 #include <mutex>
 
 #include <semaphore> 
+#include <vector>
 
 // Max number of permits
 std::counting_semaphore<5> my_semaphore(1); // initialized with the starting number of permits/keys
@@ -92,6 +93,7 @@ class SemaphoreThread1 : public IETThread {
 		}
 };
 
+std::counting_semaphore<500> limitgold(0);
 std::binary_semaphore goldkey(1);
 int gold = 0;
 int user_gold = 0;
